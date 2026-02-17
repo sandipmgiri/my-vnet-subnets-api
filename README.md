@@ -129,5 +129,6 @@ curl -X POST "https://<FUNCTION_APP>.azurewebsites.net/api/vnets" \
 - Ensure unauthenticated requests fail with 401 Unauthorized.
 
 # Notes
-- Authentication is enforced by Function App Authentication.
+- Authentication of callers is enforced by Easy Auth (Microsoft Entra ID) at the Function App edge (not in code).
 - All authenticated users in your tenant can access the API.
+- No secrets: Both ARM and Cosmos are accessed using the Function’s Managed Identity via DefaultAzureCredential().
