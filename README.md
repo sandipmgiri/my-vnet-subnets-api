@@ -1,6 +1,6 @@
 # Azure Serverless VNet API
 
-This project provides a **serverless API** built on **Azure Functions (Python)** that can:
+This project provides a **serverless API** built on **Azure Functions (Python)** with a single HTTP function that can:
 - Create a Virtual Network (VNet) with multiple subnets.
 - Store metadata in **Cosmos DB**.
 - Retrieve details of created VNets.
@@ -18,12 +18,11 @@ This project provides a **serverless API** built on **Azure Functions (Python)**
 ---
 
 ## 📦 Prerequisites
-- Azure Subscription
-- Azure CLI (`az login`)
-- Python 3.9+
-- Azure Functions Core Tools (`npm install -g azure-functions-core-tools@4`)
-- Cosmos DB account (SQL API)
-
+-  Azure subscription where you can create:
+    - Resource Group, Storage Account, Function App (Python 3.10, Linux)
+    - Cosmos DB (NoSQL) account + DB + Container
+- Ability to assign **RBAC** roles to a **Managed Identity**
+-  **Azure CLI** installed and logged in: `az login`
 ---
 
 ## 🛠️ Azure Portal Setup
@@ -49,8 +48,12 @@ This project provides a **serverless API** built on **Azure Functions (Python)**
 
 ### Step 5: Enable Authentication
 - Portal → **Function App → Authentication**.
-- Add identity provider → Microsoft.
-- Require authentication → Allow all authenticated users.
+- Add identity provider → Microsoft → Create new app registration .
+- App Service authentication: On
+- Unauthenticated requests: HTTP 401.
+- Save.
+- Where auth happens: Easy Auth enforces sign‑in before your Python function runs.
+- Keep authLevel: "anonymous" in the trigger — the platform is the gatekeeper.
 
 ### Step 6: Enable Managed Identity
 - Portal → **Function App → Identity** → System-assigned → **On** → Save.
@@ -64,6 +67,7 @@ This project provides a **serverless API** built on **Azure Functions (Python)**
   - `COSMOSDB_ACCOUNT_URI` — e.g., `https://<account>.documents.azure.com:443/`
   - `COSMOSDB_DB_NAME` — default `vnetdb`
   - `COSMOSDB_CONTAINER_NAME` — default `VnetRecords`
+  - No Cosmos key is needed. The code uses Managed Identity via DefaultAzureCredential() and Cosmos DB RBAC.
 
 ## Security & Identity
 - **Authentication**: Microsoft Entra ID via **App Service Authentication (Easy Auth)** → unauthenticated requests get **401**
@@ -83,8 +87,36 @@ This project provides a **serverless API** built on **Azure Functions (Python)**
     - func azure functionapp publish vnet-api-func
     - This uploads your code to the Function App. Azure installs dependencies and restarts the app.
  
-# Test
-
+# Test (curl or browser)
+1. Get an access token (Azure CLI)
+   - Token must be for your app registration audience (Application ID URI).
+   - In most Easy Auth setups you’ll have an Application ID URI like api://<CLIENT_ID>.
+   - `APP_URI="api://<YOUR_APP_CLIENT_ID>"`
+   - `TOKEN=$(az account get-access-token --resource $APP_URI --query accessToken -o tsv)`
+2. Create VNet (POST)
+ ```curl -X POST "https://<FUNCTION_APP>.azurewebsites.net/api/vnets" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+        "subscriptionId": "<SUBSCRIPTION_ID>",
+        "resourceGroupName": "<RG_FOR_VNET>",
+        "vnetName": "vnet-demo-001",
+        "location": "eastus",
+        "addressSpace": ["10.10.0.0/16"],
+        "subnets": [
+          {"name": "apps", "addressPrefix": "10.10.1.0/24"},
+          {"name": "db",   "addressPrefix": "10.10.2.0/24"}
+        ]
+      }'
+```
+3. Get VNet by name (GET)
+ ```
+  curl -H "Authorization: Bearer $TOKEN" "https://<FUNCTION_APP>.azurewebsites.net/api/vnets/vnet-demo-001?subscriptionId=<SUBSCRIPTION_ID>&resourceGroupName=<RG_FOR_VNET>"
+```
+4. Browser-only GET (prompts sign‑in once)
+ ```
+  https://<FUNCTION_APP>.azurewebsites.net/api/vnets/vnet-demo-001?subscriptionId=<SUBSCRIPTION_ID>&resourceGroupName=<RG_FOR_VNET>
+```
 # Validation 
 - Check Cosmos DB → Data Explorer for metadata.
 - Check Azure Portal → Virtual Networks for created VNets.
