@@ -70,7 +70,7 @@ This project provides a **serverless API** built on **Azure Functions (Python)**
   - No Cosmos key is needed. The code uses Managed Identity via DefaultAzureCredential() and Cosmos DB RBAC.
 
 ### Step 8: Expose API and Get APP_URI
-- Application ID URI of the App Registration that Azure automatically created when you enabled Authentication in your Function App.
+- Follow below steps to get Application ID URI of the App Registration that Azure automatically created when you enabled Authentication in your Function App.
 - Portal → Function App → Authentication → Find Microsoft provider  → App Registration → Expose an API → Set API URI(if empty) → click set → This creates api://<CLIENT_ID> → Copy Application ID URI → This is your APP_URI → Use in CLI:APP_URI="api://<CLIENT_ID>"
   
 ## Security & Identity
