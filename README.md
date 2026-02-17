@@ -99,7 +99,8 @@ This project provides a **serverless API** built on **Azure Functions (Python)**
    - `TOKEN=$(az account get-access-token --resource $APP_URI --query accessToken -o tsv)`
    - Azure AD issues a token for your Function App API, not for AzureRM or Microsoft Graph.
 2. Create VNet (POST)
- ```curl -X POST "https://<FUNCTION_APP>.azurewebsites.net/api/vnets" \
+ ```
+curl -X POST "https://<FUNCTION_APP>.azurewebsites.net/api/vnets" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
