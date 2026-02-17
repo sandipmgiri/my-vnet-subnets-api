@@ -69,6 +69,10 @@ This project provides a **serverless API** built on **Azure Functions (Python)**
   - `COSMOSDB_CONTAINER_NAME` — default `VnetRecords`
   - No Cosmos key is needed. The code uses Managed Identity via DefaultAzureCredential() and Cosmos DB RBAC.
 
+### Step 8: Expose API and Get APP_URI
+- Application ID URI of the App Registration that Azure automatically created when you enabled Authentication in your Function App.
+- Portal → Function App → Authentication → Find Microsoft provider  → App Registration → Expose an API → Set API URI(if empty) → click set → This creates api://<CLIENT_ID> → Copy Application ID URI → This is your APP_URI → Use in CLI:APP_URI="api://<CLIENT_ID>"
+  
 ## Security & Identity
 - **Authentication**: Microsoft Entra ID via **App Service Authentication (Easy Auth)** → unauthenticated requests get **401**
 - **ARM**: Function’s **Managed Identity** must have **Network Contributor** on the RG/subscription
@@ -77,14 +81,14 @@ This project provides a **serverless API** built on **Azure Functions (Python)**
 ## Deploy and test
 # Deployment
 - Step 1: Clone Repo
-    - git clone https://github.com/your-username/my-vnet-subnets-api.git
-    - cd my-vnet-subnets-api
+    - `git clone https://github.com/your-username/my-vnet-subnets-api.git`
+    - `cd my-vnet-subnets-api`
 
 - Step 2: Login to Azure
-    - az login
+    - `az login`
 
 - Step 3: Publish to Azure
-    - func azure functionapp publish vnet-api-func
+    - `func azure functionapp publish vnet-api-func`
     - This uploads your code to the Function App. Azure installs dependencies and restarts the app.
  
 # Test (curl or browser)
